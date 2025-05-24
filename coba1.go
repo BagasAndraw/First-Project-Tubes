@@ -197,7 +197,8 @@ func main() {
 		fmt.Println("7. Urutkan Histori Berdasarkan Durasi (Selection Sort)")
 		fmt.Println("8. Urutkan Kendaraan Berdasarkan Waktu Masuk (Quick Sort)")
 		fmt.Println("0. Keluar")
-		// fmt.Println()
+		fmt.Println("tai")
+
 		pilihan := input("Pilih menu: ")
 
 		switch pilihan {
