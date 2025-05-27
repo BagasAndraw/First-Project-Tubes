@@ -52,9 +52,16 @@ func hitungDurasi(waktu Waktu) time.Duration {
 	return waktu.JamKeluar.Sub(waktu.JamMasuk)
 }
 
-// Prosedur: Masukkan kendaraan dengan input nomor slot (tanpa menampilkan slot kosong)
+// Prosedur: Masukkan kendaraan dengan validasi panjang plat nomor dan input nomor slot
 func masukkanKendaraan() {
-	plat := input("Masukkan plat nomor: ")
+	const maxPlatLength = 10
+
+	plat := input("Masukkan plat nomor (maks 10 karakter): ")
+	if len(plat) > maxPlatLength {
+		fmt.Printf("❌ Plat nomor terlalu panjang! Maksimum %d karakter.\n", maxPlatLength)
+		return
+	}
+
 	jenis := input("Masukkan jenis kendaraan (Mobil/Motor): ")
 	slotInput := input("Masukkan nomor slot yang diinginkan: ")
 	slotNum, err := strconv.Atoi(slotInput)
@@ -76,7 +83,7 @@ func masukkanKendaraan() {
 		Slot:      slotNum,
 	}
 	kendaraanParkir = append(kendaraanParkir, kendaraan)
-	fmt.Println("Kendaraan masuk ke slot:", slotNum)
+	fmt.Println("✅ Kendaraan masuk ke slot:", slotNum)
 }
 
 // Prosedur: Keluarkan kendaraan dan simpan histori
@@ -91,7 +98,6 @@ func keluarkanKendaraan() {
 			historiKendaraan = append(historiKendaraan, k)
 			slotParkir[k.Slot-1].Kosong = true
 			kendaraanParkir = append(kendaraanParkir[:i], kendaraanParkir[i+1:]...)
-
 
 			fmt.Printf("Kendaraan keluar dari slot: %d\n", k.Slot)
 			fmt.Printf("Jenis: %s\n", k.Jenis)
@@ -119,6 +125,7 @@ func CariKendaraanSequential() {
 		fmt.Println("Kendaraan tidak ditemukan.")
 	}
 }
+
 // Binary Search: Cari kendaraan berdasarkan jam masuk (HH:MM), tanpa menggunakan break
 func cariKendaraanBerdasarkanJam() {
 	startStr := input("Masukkan jam mulai (HH:MM): ")
@@ -163,7 +170,6 @@ func cariKendaraanBerdasarkanJam() {
 		fmt.Println("Tidak ada kendaraan dalam rentang waktu tersebut.")
 	}
 }
-
 
 // Opsi 4: Tampilkan daftar slot kosong tanpa input apapun
 func cariSlotKosong() {
@@ -311,7 +317,7 @@ func main() {
 		fmt.Println("3. Cari Kendaraan (Sequential Search)")
 		fmt.Println("4. Cari Kendaraan Berdasarkan Waktu (Binary Search)")
 		fmt.Println("5. Cari Slot Kosong (Sequential Search)")
-		fmt.Println("6. Tampilkan Kendaraan yang Parkir)
+		fmt.Println("6. Tampilkan Kendaraan yang Parkir)")
 		fmt.Println("7. Tampilkan Histori Kendaraan")
 		fmt.Println("8. Urutkan Riwayat Kendaraan Berdasarkan Durasi Parkir (Selection Sort)")
 		fmt.Println("9. Urutkan Histori Berdasarkan Jenis dan Waktu Keluar (Insertion Sort)")
@@ -326,7 +332,7 @@ func main() {
 			keluarkanKendaraan()
 		case "3":
 			CariKendaraanSequential()
-		case "4" :
+		case "4":
 			cariKendaraanBerdasarkanJam()
 		case "5":
 			cariSlotKosong()
