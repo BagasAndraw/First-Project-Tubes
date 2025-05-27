@@ -92,16 +92,18 @@ func keluarkanKendaraan() {
 			slotParkir[k.Slot-1].Kosong = true
 			kendaraanParkir = append(kendaraanParkir[:i], kendaraanParkir[i+1:]...)
 
-			fmt.Printf("✅ Kendaraan keluar dari slot: %d\n", k.Slot)
-			fmt.Printf("🚘 Jenis: %s\n", k.Jenis)
-			fmt.Printf("🕒 Durasi parkir: %.0f menit\n", durasi.Minutes())
+
+			fmt.Printf("Kendaraan keluar dari slot: %d\n", k.Slot)
+			fmt.Printf("Jenis: %s\n", k.Jenis)
+			fmt.Printf("Durasi parkir: %.0f menit\n", durasi.Minutes())
+
 			return
 		}
 	}
 	fmt.Println("❌ Kendaraan tidak ditemukan!")
 }
 
-// Linear Search: Cari kendaraan berdasarkan plat
+// Sequential Search: Cari kendaraan berdasarkan plat
 func CariKendaraanSequential() {
 	plat := input("Masukkan plat nomor: ")
 	ditemukan := false
@@ -117,6 +119,51 @@ func CariKendaraanSequential() {
 		fmt.Println("Kendaraan tidak ditemukan.")
 	}
 }
+// Binary Search: Cari kendaraan berdasarkan jam masuk (HH:MM), tanpa menggunakan break
+func cariKendaraanBerdasarkanJam() {
+	startStr := input("Masukkan jam mulai (HH:MM): ")
+	endStr := input("Masukkan jam akhir (HH:MM): ")
+
+	// Parse input jam menjadi total menit
+	parseJam := func(s string) int {
+		parts := strings.Split(s, ":")
+		if len(parts) != 2 {
+			return -1
+		}
+		jam, _ := strconv.Atoi(parts[0])
+		menit, _ := strconv.Atoi(parts[1])
+		return jam*60 + menit
+	}
+
+	startMenit := parseJam(startStr)
+	endMenit := parseJam(endStr)
+
+	if startMenit == -1 || endMenit == -1 {
+		fmt.Println("Format jam tidak valid. Gunakan format HH:MM.")
+		return
+	}
+
+	ditemukan := false
+	fmt.Printf("Kendaraan yang masuk antara %s dan %s:\n", startStr, endStr)
+
+	for _, k := range kendaraanParkir {
+		jamMasuk := k.Waktu.JamMasuk
+		jam := jamMasuk.Hour()
+		menit := jamMasuk.Minute()
+		totalMenit := jam*60 + menit
+
+		if totalMenit >= startMenit && totalMenit <= endMenit {
+			fmt.Printf("- %s (%s), Slot %d, Masuk: %s\n",
+				k.PlatNomor, k.Jenis, k.Slot, jamMasuk.Format("15:04"))
+			ditemukan = true
+		}
+	}
+
+	if !ditemukan {
+		fmt.Println("Tidak ada kendaraan dalam rentang waktu tersebut.")
+	}
+}
+
 
 // Opsi 4: Tampilkan daftar slot kosong tanpa input apapun
 func cariSlotKosong() {
@@ -132,14 +179,16 @@ func cariSlotKosong() {
 		return
 	}
 	for _, s := range kosong {
-		fmt.Printf("- Slot %d\n", s.Nomor)
+		fmt.Printf("Slot %d\n", s.Nomor)
 	}
 }
 
 // Selection Sort: Urutkan histori berdasarkan durasi dan tampilkan
 func urutkanKendaraanParkirBerdasarkanDurasi() {
 	if len(kendaraanParkir) == 0 {
-		fmt.Println("🚫 Tidak ada kendaraan yang sedang parkir.")
+
+		fmt.Println("Tidak ada kendaraan yang sedang parkir.")
+
 		return
 	}
 
@@ -157,7 +206,8 @@ func urutkanKendaraanParkirBerdasarkanDurasi() {
 	}
 
 	// Tampilkan hasil
-	fmt.Println("✅ Kendaraan parkir diurutkan berdasarkan durasi parkir hingga saat ini:")
+
+	fmt.Println("Kendaraan parkir diurutkan berdasarkan durasi parkir hingga saat ini:")
 	for _, k := range kendaraanParkir {
 		durasi := time.Since(k.Waktu.JamMasuk)
 		fmt.Printf("- %s (%s), Slot %d, Durasi: %.0f menit\n",
@@ -202,7 +252,8 @@ func urutkanHistoriBerdasarkanJenisDanJamKeluar() {
 	insertionSortByJamKeluar(mobilList)
 
 	// Tampilkan hasil
-	fmt.Println("✅ Histori kendaraan diurutkan berdasarkan jenis dan waktu keluar:")
+
+	fmt.Println("Histori kendaraan diurutkan berdasarkan jenis dan waktu keluar:")
 
 	if len(motorList) > 0 {
 		fmt.Println("- Motor:")
@@ -258,11 +309,13 @@ func main() {
 		fmt.Println("1. Masukkan Kendaraan")
 		fmt.Println("2. Keluarkan Kendaraan")
 		fmt.Println("3. Cari Kendaraan (Sequential Search)")
-		fmt.Println("4. Cari Slot Kosong (Sequential Search)")
-		fmt.Println("5. Tampilkan Kendaraan yang Parkir")
-		fmt.Println("6. Tampilkan Histori Kendaraan")
-		fmt.Println("7. Urutkan Riwayat Kendaraan Berdasarkan Durasi Parkir (Selection Sort)")
-		fmt.Println("8. Urutkan Histori Berdasarkan Jenis dan Waktu Keluar (Insertion Sort)")
+		fmt.Println("4. Cari Kendaraan Berdasarkan Waktu (Binary Search)")
+		fmt.Println("5. Cari Slot Kosong (Sequential Search)")
+		fmt.Println("6. Tampilkan Kendaraan yang Parkir)
+		fmt.Println("7. Tampilkan Histori Kendaraan")
+		fmt.Println("8. Urutkan Riwayat Kendaraan Berdasarkan Durasi Parkir (Selection Sort)")
+		fmt.Println("9. Urutkan Histori Berdasarkan Jenis dan Waktu Keluar (Insertion Sort)")
+
 		fmt.Println("0. Keluar")
 		pilihan := input("Pilih menu: ")
 
@@ -273,15 +326,17 @@ func main() {
 			keluarkanKendaraan()
 		case "3":
 			CariKendaraanSequential()
-		case "4":
-			cariSlotKosong()
+		case "4" :
+			cariKendaraanBerdasarkanJam()
 		case "5":
-			tampilkanKendaraanParkir()
+			cariSlotKosong()
 		case "6":
-			tampilkanHistori()
+			tampilkanKendaraanParkir()
 		case "7":
-			urutkanKendaraanParkirBerdasarkanDurasi()
+			tampilkanHistori()
 		case "8":
+			urutkanKendaraanParkirBerdasarkanDurasi()
+		case "9":
 			urutkanHistoriBerdasarkanJenisDanJamKeluar()
 		case "0":
 			fmt.Println("Terima kasih telah menggunakan sistem parkir!")
