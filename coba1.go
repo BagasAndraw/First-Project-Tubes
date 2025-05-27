@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -53,27 +52,31 @@ func hitungDurasi(waktu Waktu) time.Duration {
 	return waktu.JamKeluar.Sub(waktu.JamMasuk)
 }
 
-// Prosedur: Masukkan kendaraan
+// Prosedur: Masukkan kendaraan dengan input nomor slot (tanpa menampilkan slot kosong)
 func masukkanKendaraan() {
 	plat := input("Masukkan plat nomor: ")
 	jenis := input("Masukkan jenis kendaraan (Mobil/Motor): ")
-	now := time.Now()
-
-	for i := 0; i < len(slotParkir); i++ {
-		if slotParkir[i].Kosong {
-			slotParkir[i].Kosong = false
-			kendaraan := Kendaraan{
-				PlatNomor: plat,
-				Jenis:     jenis,
-				Waktu:     Waktu{JamMasuk: now},
-				Slot:      slotParkir[i].Nomor,
-			}
-			kendaraanParkir = append(kendaraanParkir, kendaraan)
-			fmt.Println("✅ Kendaraan masuk ke slot:", slotParkir[i].Nomor)
-			return
-		}
+	slotInput := input("Masukkan nomor slot yang diinginkan: ")
+	slotNum, err := strconv.Atoi(slotInput)
+	if err != nil || slotNum < 1 || slotNum > len(slotParkir) {
+		fmt.Println("❌ Nomor slot tidak valid.")
+		return
 	}
-	fmt.Println("❌ Slot penuh!")
+	if !slotParkir[slotNum-1].Kosong {
+		fmt.Println("❌ Slot sudah terisi.")
+		return
+	}
+
+	now := time.Now()
+	slotParkir[slotNum-1].Kosong = false
+	kendaraan := Kendaraan{
+		PlatNomor: plat,
+		Jenis:     jenis,
+		Waktu:     Waktu{JamMasuk: now},
+		Slot:      slotNum,
+	}
+	kendaraanParkir = append(kendaraanParkir, kendaraan)
+	fmt.Println("✅ Kendaraan masuk ke slot:", slotNum)
 }
 
 // Prosedur: Keluarkan kendaraan dan simpan histori
@@ -105,37 +108,25 @@ func cariKendaraanLinear() {
 	fmt.Println("❌ Kendaraan tidak ditemukan.")
 }
 
-// Binary Search: Cari slot kosong berdasarkan nomor slot
-func cariSlotKosongBinary() {
-	sort.Slice(slotParkir[:], func(i, j int) bool {
-		return slotParkir[i].Nomor < slotParkir[j].Nomor
-	})
-	slotInput := input("Masukkan nomor slot yang dicari: ")
-	slotNum, err := strconv.Atoi(slotInput)
-	if err != nil {
-		fmt.Println("❌ Nomor tidak valid.")
-		return
-	}
-	low, high := 0, len(slotParkir)-1
-	for low <= high {
-		mid := (low + high) / 2
-		if slotParkir[mid].Nomor == slotNum {
-			if slotParkir[mid].Kosong {
-				fmt.Println("✅ Slot", slotNum, "kosong.")
-			} else {
-				fmt.Println("❌ Slot", slotNum, "sudah terisi.")
-			}
-			return
-		} else if slotParkir[mid].Nomor < slotNum {
-			low = mid + 1
-		} else {
-			high = mid - 1
+// Opsi 4: Tampilkan daftar slot kosong tanpa input apapun
+func cariSlotKosong() {
+	fmt.Println("📌 Daftar slot kosong:")
+	var kosong []SlotParkir
+	for _, slot := range slotParkir {
+		if slot.Kosong {
+			kosong = append(kosong, slot)
 		}
 	}
-	fmt.Println("❌ Slot tidak ditemukan.")
+	if len(kosong) == 0 {
+		fmt.Println("🚫 Tidak ada slot kosong.")
+		return
+	}
+	for _, s := range kosong {
+		fmt.Printf("- Slot %d\n", s.Nomor)
+	}
 }
 
-// Selection Sort: Urutkan histori berdasarkan durasi
+// Selection Sort: Urutkan histori berdasarkan durasi dan tampilkan
 func selectionSortDurasi() {
 	for i := 0; i < len(historiKendaraan); i++ {
 		min := i
@@ -147,14 +138,54 @@ func selectionSortDurasi() {
 		historiKendaraan[i], historiKendaraan[min] = historiKendaraan[min], historiKendaraan[i]
 	}
 	fmt.Println("✅ Histori diurutkan berdasarkan durasi parkir (Selection Sort).")
+	tampilkanHistori()
 }
 
-// Binary Sort: Urutkan kendaraan berdasarkan waktu masuk
-func binarySortByWaktuMasuk() {
-	sort.Slice(kendaraanParkir, func(i, j int) bool {
-		return kendaraanParkir[i].Waktu.JamMasuk.Before(kendaraanParkir[j].Waktu.JamMasuk)
-	})
-	fmt.Println("✅ Kendaraan diurutkan berdasarkan waktu masuk (Binary Sort).")
+// Binary Sort: Urutkan kendaraan berdasarkan waktu masuk dan tampilkan
+func urutkanDanTampilkanBerdasarkanJenis() {
+	if len(kendaraanParkir) == 0 {
+		fmt.Println("🚫 Tidak ada kendaraan yang sedang parkir.")
+		return
+	}
+
+	// Pisahkan kendaraan berdasarkan jenis
+	var motorList []Kendaraan
+	var mobilList []Kendaraan
+
+	for _, k := range kendaraanParkir {
+		jenisLower := strings.ToLower(k.Jenis)
+		if jenisLower == "motor" {
+			motorList = append(motorList, k)
+		} else if jenisLower == "mobil" {
+			mobilList = append(mobilList, k)
+		} else {
+			// Jika jenis lain atau input salah, bisa masuk ke daftar mobil misalnya
+			mobilList = append(mobilList, k)
+		}
+	}
+
+	// Tampilkan hasil
+	fmt.Println("✅ Kendaraan diurutkan berdasarkan jenis:")
+
+	if len(motorList) > 0 {
+		fmt.Println("- Motor:")
+		for _, m := range motorList {
+			fmt.Printf("  - %s, Slot %d, Masuk: %s\n",
+				m.PlatNomor, m.Slot, m.Waktu.JamMasuk.Format("15:04:05"))
+		}
+	} else {
+		fmt.Println("- Motor: Tidak ada")
+	}
+
+	if len(mobilList) > 0 {
+		fmt.Println("- Mobil:")
+		for _, m := range mobilList {
+			fmt.Printf("  - %s, Slot %d, Masuk: %s\n",
+				m.PlatNomor, m.Slot, m.Waktu.JamMasuk.Format("15:04:05"))
+		}
+	} else {
+		fmt.Println("- Mobil: Tidak ada")
+	}
 }
 
 // Menampilkan kendaraan yang sedang parkir
@@ -183,22 +214,19 @@ func tampilkanHistori() {
 	}
 }
 
-// Main
 func main() {
 	initSlot()
 	for {
 		fmt.Println("\n===== MENU PARKIR =====")
 		fmt.Println("1. Masukkan Kendaraan")
 		fmt.Println("2. Keluarkan Kendaraan")
-		fmt.Println("3. Cari Kendaraan (Squential Search)")
-		fmt.Println("4. Cari Slot Kosong (Binary Search)")
+		fmt.Println("3. Cari Kendaraan (Linear Search)")
+		fmt.Println("4. Cari Slot Kosong (Sequential Search)")
 		fmt.Println("5. Tampilkan Kendaraan yang Parkir")
 		fmt.Println("6. Tampilkan Histori Kendaraan")
 		fmt.Println("7. Urutkan Histori Berdasarkan Durasi (Selection Sort)")
-		fmt.Println("8. Urutkan Kendaraan Berdasarkan Waktu Masuk (Quick Sort)")
+		fmt.Println("8. Urutkan Kendaraan Berdasarkan Waktu Masuk (Binary Sort)")
 		fmt.Println("0. Keluar")
-		fmt.Println()
-
 		pilihan := input("Pilih menu: ")
 
 		switch pilihan {
@@ -209,7 +237,7 @@ func main() {
 		case "3":
 			cariKendaraanLinear()
 		case "4":
-			cariSlotKosongBinary()
+			cariSlotKosong()
 		case "5":
 			tampilkanKendaraanParkir()
 		case "6":
@@ -217,7 +245,7 @@ func main() {
 		case "7":
 			selectionSortDurasi()
 		case "8":
-			binarySortByWaktuMasuk()
+			urutkanDanTampilkanBerdasarkanJenis()
 		case "0":
 			fmt.Println("👋 Terima kasih telah menggunakan sistem parkir!")
 			return
