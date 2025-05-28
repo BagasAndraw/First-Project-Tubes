@@ -117,7 +117,7 @@ func CariKendaraanSequential() {
 		fmt.Println("Kendaraan tidak ditemukan.")
 	}
 }
-// Binary Search: Cari kendaraan berdasarkan jam masuk (HH:MM), tanpa menggunakan break
+// Binary Search: Cari kendaraan berdasarkan jam masuk (HH:MM), dalam rentang 
 func cariKendaraanBerdasarkanJam() {
 	startStr := input("Masukkan jam mulai (HH:MM): ")
 	endStr := input("Masukkan jam akhir (HH:MM): ")
@@ -163,7 +163,7 @@ func cariKendaraanBerdasarkanJam() {
 }
 
 
-// Opsi 4: Tampilkan daftar slot kosong tanpa input apapun
+// Sequential search: Tampilkan daftar slot kosong tanpa input apapun
 func cariSlotKosong() {
 	fmt.Println("Daftar slot kosong:")
 	var kosong []SlotParkir
@@ -210,7 +210,7 @@ func urutkanKendaraanParkirBerdasarkanDurasi() {
 	}
 }
 
-// Binary Sort: Urutkan kendaraan berdasarkan waktu masuk dan tampilkan
+// Insertion Sort: Urutkan kendaraan berdasarkan waktu masuk dan tampilkan
 func urutkanHistoriBerdasarkanJenisDanJamKeluar() {
 	if len(historiKendaraan) == 0 {
 		fmt.Println("📭 Belum ada histori kendaraan.")
