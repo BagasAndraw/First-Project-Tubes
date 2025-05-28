@@ -131,7 +131,7 @@ func cariKendaraanBerdasarkanJam() {
 	startStr := input("Masukkan jam mulai (HH:MM): ")
 	endStr := input("Masukkan jam akhir (HH:MM): ")
 
-	// Parse input jam menjadi total menit
+	// Parse waktu ke total menit
 	parseJam := func(s string) int {
 		parts := strings.Split(s, ":")
 		if len(parts) != 2 {
@@ -145,29 +145,64 @@ func cariKendaraanBerdasarkanJam() {
 	startMenit := parseJam(startStr)
 	endMenit := parseJam(endStr)
 
-	if startMenit == -1 || endMenit == -1 {
-		fmt.Println("Format jam tidak valid. Gunakan format HH:MM.")
+	if startMenit == -1 || endMenit == -1 || startMenit > endMenit {
+		fmt.Println("Format waktu tidak valid atau rentang salah.")
 		return
 	}
 
-	ditemukan := false
-	fmt.Printf("Kendaraan yang masuk antara %s dan %s:\n", startStr, endStr)
+	// Urutkan kendaraanParkir berdasarkan JamMasuk (pakai Insertion Sort)
+	for i := 1; i < len(kendaraanParkir); i++ {
+		key := kendaraanParkir[i]
+		j := i - 1
+		for j >= 0 && kendaraanParkir[j].Waktu.JamMasuk.After(key.Waktu.JamMasuk) {
+			kendaraanParkir[j+1] = kendaraanParkir[j]
+			j--
+		}
+		kendaraanParkir[j+1] = key
+	}
 
-	for _, k := range kendaraanParkir {
-		jamMasuk := k.Waktu.JamMasuk
-		jam := jamMasuk.Hour()
-		menit := jamMasuk.Minute()
-		totalMenit := jam*60 + menit
+	// Fungsi bantu: konversi JamMasuk ke menit
+	getMenit := func(t time.Time) int {
+		return t.Hour()*60 + t.Minute()
+	}
 
-		if totalMenit >= startMenit && totalMenit <= endMenit {
-			fmt.Printf("- %s (%s), Slot %d, Masuk: %s\n",
-				k.PlatNomor, k.Jenis, k.Slot, jamMasuk.Format("15:04"))
-			ditemukan = true
+	// Binary search untuk indeks awal
+	low, high := 0, len(kendaraanParkir)-1
+	startIdx := -1
+	for low <= high {
+		mid := (low + high) / 2
+		if getMenit(kendaraanParkir[mid].Waktu.JamMasuk) >= startMenit {
+			startIdx = mid
+			high = mid - 1
+		} else {
+			low = mid + 1
 		}
 	}
 
-	if !ditemukan {
+	// Binary search untuk indeks akhir
+	low, high = 0, len(kendaraanParkir)-1
+	endIdx := -1
+	for low <= high {
+		mid := (low + high) / 2
+		if getMenit(kendaraanParkir[mid].Waktu.JamMasuk) <= endMenit {
+			endIdx = mid
+			low = mid + 1
+		} else {
+			high = mid - 1
+		}
+	}
+
+	// Tampilkan hasil pencarian
+	if startIdx == -1 || endIdx == -1 || startIdx > endIdx {
 		fmt.Println("Tidak ada kendaraan dalam rentang waktu tersebut.")
+		return
+	}
+
+	fmt.Printf("Kendaraan yang masuk antara %s dan %s:\n", startStr, endStr)
+	for i := startIdx; i <= endIdx; i++ {
+		k := kendaraanParkir[i]
+		fmt.Printf("- %s (%s), Slot %d, Masuk: %s\n",
+			k.PlatNomor, k.Jenis, k.Slot, k.Waktu.JamMasuk.Format("15:04"))
 	}
 }
 
@@ -317,11 +352,10 @@ func main() {
 		fmt.Println("3. Cari Kendaraan (Sequential Search)")
 		fmt.Println("4. Cari Kendaraan Berdasarkan Waktu (Binary Search)")
 		fmt.Println("5. Cari Slot Kosong (Sequential Search)")
-		fmt.Println("6. Tampilkan Kendaraan yang Parkir)")
+		fmt.Println("6. Tampilkan Kendaraan yang Parkir")
 		fmt.Println("7. Tampilkan Histori Kendaraan")
 		fmt.Println("8. Urutkan Riwayat Kendaraan Berdasarkan Durasi Parkir (Selection Sort)")
 		fmt.Println("9. Urutkan Histori Berdasarkan Jenis dan Waktu Keluar (Insertion Sort)")
-
 		fmt.Println("0. Keluar")
 		pilihan := input("Pilih menu: ")
 
