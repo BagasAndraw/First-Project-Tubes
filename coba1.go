@@ -54,11 +54,11 @@ func hitungDurasi(waktu Waktu) time.Duration {
 
 // Prosedur: Masukkan kendaraan dengan validasi panjang plat nomor dan input nomor slot
 func masukkanKendaraan() {
-	const maxPlatLength = 10
+	const maxPlatLength = 4
 
-	plat := input("Masukkan plat nomor (maks 10 karakter): ")
+	plat := input("Masukkan plat nomor (4 angka): ")
 	if len(plat) > maxPlatLength {
-		fmt.Printf("❌ Plat nomor terlalu panjang! Maksimum %d karakter.\n", maxPlatLength)
+		fmt.Printf("Plat nomor terlalu panjang! Maksimum %d karakter.\n", maxPlatLength)
 		return
 	}
 
@@ -83,7 +83,7 @@ func masukkanKendaraan() {
 		Slot:      slotNum,
 	}
 	kendaraanParkir = append(kendaraanParkir, kendaraan)
-	fmt.Println("✅ Kendaraan masuk ke slot:", slotNum)
+	fmt.Println("Kendaraan masuk ke slot:", slotNum)
 }
 
 // Prosedur: Keluarkan kendaraan dan simpan histori
@@ -106,7 +106,7 @@ func keluarkanKendaraan() {
 			return
 		}
 	}
-	fmt.Println("❌ Kendaraan tidak ditemukan!")
+	fmt.Println("Kendaraan tidak ditemukan!")
 }
 
 // Sequential Search: Cari kendaraan berdasarkan plat
@@ -126,13 +126,12 @@ func CariKendaraanSequential() {
 	}
 }
 
-// Binary Search: Cari kendaraan berdasarkan jam masuk (HH:MM), tanpa menggunakan break
+// Binary Search: Cari kendaraan berdasarkan jam masuk (HH:MM), dalam rentang
 func cariKendaraanBerdasarkanJam() {
 	startStr := input("Masukkan jam mulai (HH:MM): ")
 	endStr := input("Masukkan jam akhir (HH:MM): ")
 
-	// Parse waktu ke total menit
-	parseJam := func(s string) int {
+	parseJamKeMenit := func(s string) int {
 		parts := strings.Split(s, ":")
 		if len(parts) != 2 {
 			return -1
@@ -142,8 +141,8 @@ func cariKendaraanBerdasarkanJam() {
 		return jam*60 + menit
 	}
 
-	startMenit := parseJam(startStr)
-	endMenit := parseJam(endStr)
+	startMenit := parseJamKeMenit(startStr)
+	endMenit := parseJamKeMenit(endStr)
 
 	if startMenit == -1 || endMenit == -1 || startMenit > endMenit {
 		fmt.Println("Format waktu tidak valid atau rentang salah.")
@@ -161,12 +160,10 @@ func cariKendaraanBerdasarkanJam() {
 		kendaraanParkir[j+1] = key
 	}
 
-	// Fungsi bantu: konversi JamMasuk ke menit
 	getMenit := func(t time.Time) int {
 		return t.Hour()*60 + t.Minute()
 	}
 
-	// Binary search untuk indeks awal
 	low, high := 0, len(kendaraanParkir)-1
 	startIdx := -1
 	for low <= high {
@@ -179,7 +176,6 @@ func cariKendaraanBerdasarkanJam() {
 		}
 	}
 
-	// Binary search untuk indeks akhir
 	low, high = 0, len(kendaraanParkir)-1
 	endIdx := -1
 	for low <= high {
@@ -192,7 +188,6 @@ func cariKendaraanBerdasarkanJam() {
 		}
 	}
 
-	// Tampilkan hasil pencarian
 	if startIdx == -1 || endIdx == -1 || startIdx > endIdx {
 		fmt.Println("Tidak ada kendaraan dalam rentang waktu tersebut.")
 		return
@@ -206,7 +201,8 @@ func cariKendaraanBerdasarkanJam() {
 	}
 }
 
-// Opsi 4: Tampilkan daftar slot kosong tanpa input apapun
+// Sequential search: Tampilkan daftar slot kosong tanpa input apapun
+
 func cariSlotKosong() {
 	fmt.Println("Daftar slot kosong:")
 	var kosong []SlotParkir
@@ -233,7 +229,6 @@ func urutkanKendaraanParkirBerdasarkanDurasi() {
 		return
 	}
 
-	// Selection Sort langsung di slice asli
 	for i := 0; i < len(kendaraanParkir); i++ {
 		min := i
 		for j := i + 1; j < len(kendaraanParkir); j++ {
@@ -256,14 +251,13 @@ func urutkanKendaraanParkirBerdasarkanDurasi() {
 	}
 }
 
-// Binary Sort: Urutkan kendaraan berdasarkan waktu masuk dan tampilkan
+// Insertion Sort: Urutkan kendaraan berdasarkan waktu masuk dan tampilkan
 func urutkanHistoriBerdasarkanJenisDanJamKeluar() {
 	if len(historiKendaraan) == 0 {
-		fmt.Println("📭 Belum ada histori kendaraan.")
+		fmt.Println("Belum ada histori kendaraan.")
 		return
 	}
 
-	// Pisahkan histori berdasarkan jenis
 	var motorList []Kendaraan
 	var mobilList []Kendaraan
 
@@ -276,7 +270,6 @@ func urutkanHistoriBerdasarkanJenisDanJamKeluar() {
 		}
 	}
 
-	// Fungsi sorting menggunakan Insertion Sort berdasarkan JamKeluar (ascending)
 	insertionSortByJamKeluar := func(list []Kendaraan) {
 		for i := 1; i < len(list); i++ {
 			key := list[i]
