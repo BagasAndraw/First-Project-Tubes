@@ -89,20 +89,26 @@ func masukkanKendaraan() {
 // Prosedur: Keluarkan kendaraan dan simpan histori
 func keluarkanKendaraan() {
 	plat := input("Masukkan plat nomor kendaraan yang keluar: ")
-	for i, k := range kendaraanParkir {
-		if k.PlatNomor == plat {
+	for i := 0; i < len(kendaraanParkir); i++ {
+		if kendaraanParkir[i].PlatNomor == plat {
 			now := time.Now()
-			k.Waktu.JamKeluar = now
-			durasi := hitungDurasi(k.Waktu)
+			// Update langsung pada slice kendaraanParkir agar perubahan tersimpan
+			kendaraanParkir[i].Waktu.JamKeluar = now
 
-			historiKendaraan = append(historiKendaraan, k)
-			slotParkir[k.Slot-1].Kosong = true
+			durasi := hitungDurasi(kendaraanParkir[i].Waktu)
+
+			// Tambah ke histori dengan data yang sudah lengkap
+			historiKendaraan = append(historiKendaraan, kendaraanParkir[i])
+
+			// Bebaskan slot parkir
+			slotParkir[kendaraanParkir[i].Slot-1].Kosong = true
+
+			// Hapus kendaraan dari daftar parkir aktif
 			kendaraanParkir = append(kendaraanParkir[:i], kendaraanParkir[i+1:]...)
 
-			fmt.Printf("Kendaraan keluar dari slot: %d\n", k.Slot)
-			fmt.Printf("Jenis: %s\n", k.Jenis)
+			fmt.Printf("Kendaraan keluar dari slot: %d\n", kendaraanParkir[i].Slot)
+			fmt.Printf("Jenis: %s\n", kendaraanParkir[i].Jenis)
 			fmt.Printf("Durasi parkir: %.0f menit\n", durasi.Minutes())
-
 			return
 		}
 	}
