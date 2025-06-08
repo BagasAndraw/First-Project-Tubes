@@ -204,19 +204,13 @@ func cariKendaraanBerdasarkanJam() {
 // Sequential search: Tampilkan daftar slot kosong tanpa input apapun
 
 func cariSlotKosong() {
-	fmt.Println("Daftar slot kosong:")
-	var kosong []SlotParkir
+	fmt.Println("Status semua slot parkir:")
 	for _, slot := range slotParkir {
 		if slot.Kosong {
-			kosong = append(kosong, slot)
+			fmt.Printf("Slot %d\n", slot.Nomor)
+		} else {
+			fmt.Printf("Slot %d Sudah Terisi\n", slot.Nomor)
 		}
-	}
-	if len(kosong) == 0 {
-		fmt.Println("Tidak ada slot kosong.")
-		return
-	}
-	for _, s := range kosong {
-		fmt.Printf("Slot %d\n", s.Nomor)
 	}
 }
 
