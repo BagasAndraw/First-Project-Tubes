@@ -122,34 +122,32 @@ func keluarkanKendaraan() {
 	for i := 0; i < len(kendaraanParkir); i++ {
 		if kendaraanParkir[i].PlatNomor == plat {
 			now := time.Now()
-			// Update langsung pada slice kendaraanParkir agar perubahan tersimpan
-			kendaraanParkir[i].Waktu.JamKeluar = now
 
-			durasi := hitungDurasi(kendaraanParkir[i].Waktu)
+			k := kendaraanParkir[i]
+			k.Waktu.JamKeluar = now
+			durasi := hitungDurasi(k.Waktu)
 
-			// Tambah ke histori dengan data yang sudah lengkap
-			historiKendaraan = append(historiKendaraan, kendaraanParkir[i])
+			historiKendaraan = append(historiKendaraan, k)
 
-			// Bebaskan slot parkir
-			jenis := strings.ToLower(kendaraanParkir[i].Jenis)
-			slotNum := kendaraanParkir[i].Slot
+			jenis := strings.ToLower(k.Jenis)
+			slotNum := k.Slot
 			if jenis == "motor" {
 				slotParkirMotor[slotNum-1].Kosong = true
 			} else if jenis == "mobil" {
 				slotParkirMobil[slotNum-1].Kosong = true
 			}
 
-			// Hapus kendaraan dari daftar parkir aktif
 			kendaraanParkir = append(kendaraanParkir[:i], kendaraanParkir[i+1:]...)
 
-			fmt.Printf("Kendaraan keluar dari slot: %d\n", kendaraanParkir[i].Slot)
-			fmt.Printf("Jenis: %s\n", kendaraanParkir[i].Jenis)
+			fmt.Printf("Kendaraan keluar dari slot: %d\n", k.Slot)
+			fmt.Printf("Jenis: %s\n", k.Jenis)
 			fmt.Printf("Durasi parkir: %.0f menit\n", durasi.Minutes())
 			return
 		}
 	}
 	fmt.Println("Kendaraan tidak ditemukan!")
 }
+
 
 // Sequential Search: Cari kendaraan berdasarkan plat
 func CariKendaraanSequential() {
@@ -249,18 +247,18 @@ func cariSlotKosong() {
 	fmt.Println("Status slot parkir motor:")
 	for _, slot := range slotParkirMotor {
 		if slot.Kosong {
-			fmt.Printf("Slot Motor %d Kosong\n", slot.Nomor)
+			fmt.Printf("Slot %d \n", slot.Nomor)
 		} else {
-			fmt.Printf("Slot Motor %d Terisi\n", slot.Nomor)
+			fmt.Printf("Slot %d Sudah Terisi\n", slot.Nomor)
 		}
 	}
 
 	fmt.Println("Status slot parkir mobil:")
 	for _, slot := range slotParkirMobil {
 		if slot.Kosong {
-			fmt.Printf("Slot Mobil %d Kosong\n", slot.Nomor)
+			fmt.Printf("Slot %d \n", slot.Nomor)
 		} else {
-			fmt.Printf("Slot Mobil %d Terisi\n", slot.Nomor)
+			fmt.Printf("Slot %d Sudah Terisi\n", slot.Nomor)
 		}
 	}
 }
