@@ -19,24 +19,32 @@ type Kendaraan struct {
 	PlatNomor string
 	Jenis     string
 	Waktu     Waktu
-	Slot      int
+	Slot      int // Menyimpan nomor slot (1-15, terlepas dari jenis)
 }
 
 type SlotParkir struct {
 	Nomor  int
 	Kosong bool
+	Jenis  string // "Motor" atau "Mobil"
 }
 
 // Variabel global
-var slotParkir [100]SlotParkir
+const jumlahSlotMotor = 15
+const jumlahSlotMobil = 15
+
+var slotParkirMotor [jumlahSlotMotor]SlotParkir
+var slotParkirMobil [jumlahSlotMobil]SlotParkir
 var kendaraanParkir []Kendaraan
 var historiKendaraan []Kendaraan
 var scanner = bufio.NewScanner(os.Stdin)
 
 // Inisialisasi slot
 func initSlot() {
-	for i := 0; i < len(slotParkir); i++ {
-		slotParkir[i] = SlotParkir{Nomor: i + 1, Kosong: true}
+	for i := 0; i < len(slotParkirMotor); i++ {
+		slotParkirMotor[i] = SlotParkir{Nomor: i + 1, Kosong: true, Jenis: "Motor"}
+	}
+	for i := 0; i < len(slotParkirMobil); i++ {
+		slotParkirMobil[i] = SlotParkir{Nomor: i + 1, Kosong: true, Jenis: "Mobil"}
 	}
 }
 
@@ -63,19 +71,41 @@ func masukkanKendaraan() {
 	}
 
 	jenis := input("Masukkan jenis kendaraan (Mobil/Motor): ")
-	slotInput := input("Masukkan nomor slot yang diinginkan: ")
-	slotNum, err := strconv.Atoi(slotInput)
-	if err != nil || slotNum < 1 || slotNum > len(slotParkir) {
-		fmt.Println("Nomor slot tidak valid.")
-		return
-	}
-	if !slotParkir[slotNum-1].Kosong {
-		fmt.Println("Slot sudah terisi.")
+	jenis = strings.ToLower(jenis) // Konversi ke lowercase untuk perbandingan yang tidak case-sensitive
+
+	var slotNum int
+	var err error
+
+	if jenis == "motor" {
+		slotInput := input("Masukkan nomor slot motor yang diinginkan (1-15): ")
+		slotNum, err = strconv.Atoi(slotInput)
+		if err != nil || slotNum < 1 || slotNum > len(slotParkirMotor) {
+			fmt.Println("Nomor slot motor tidak valid.")
+			return
+		}
+		if !slotParkirMotor[slotNum-1].Kosong {
+			fmt.Println("Slot motor sudah terisi.")
+			return
+		}
+		slotParkirMotor[slotNum-1].Kosong = false
+	} else if jenis == "mobil" {
+		slotInput := input("Masukkan nomor slot mobil yang diinginkan (1-15): ")
+		slotNum, err = strconv.Atoi(slotInput)
+		if err != nil || slotNum < 1 || slotNum > len(slotParkirMobil) {
+			fmt.Println("Nomor slot mobil tidak valid.")
+			return
+		}
+		if !slotParkirMobil[slotNum-1].Kosong {
+			fmt.Println("Slot mobil sudah terisi.")
+			return
+		}
+		slotParkirMobil[slotNum-1].Kosong = false
+	} else {
+		fmt.Println("Jenis kendaraan tidak valid. Harus 'Mobil' atau 'Motor'.")
 		return
 	}
 
 	now := time.Now()
-	slotParkir[slotNum-1].Kosong = false
 	kendaraan := Kendaraan{
 		PlatNomor: plat,
 		Jenis:     jenis,
@@ -101,7 +131,13 @@ func keluarkanKendaraan() {
 			historiKendaraan = append(historiKendaraan, kendaraanParkir[i])
 
 			// Bebaskan slot parkir
-			slotParkir[kendaraanParkir[i].Slot-1].Kosong = true
+			jenis := strings.ToLower(kendaraanParkir[i].Jenis)
+			slotNum := kendaraanParkir[i].Slot
+			if jenis == "motor" {
+				slotParkirMotor[slotNum-1].Kosong = true
+			} else if jenis == "mobil" {
+				slotParkirMobil[slotNum-1].Kosong = true
+			}
 
 			// Hapus kendaraan dari daftar parkir aktif
 			kendaraanParkir = append(kendaraanParkir[:i], kendaraanParkir[i+1:]...)
@@ -210,12 +246,21 @@ func cariKendaraanBerdasarkanJam() {
 // Sequential search: Tampilkan daftar slot kosong tanpa input apapun
 
 func cariSlotKosong() {
-	fmt.Println("Status semua slot parkir:")
-	for _, slot := range slotParkir {
+	fmt.Println("Status slot parkir motor:")
+	for _, slot := range slotParkirMotor {
 		if slot.Kosong {
-			fmt.Printf("Slot %d\n", slot.Nomor)
+			fmt.Printf("Slot Motor %d Kosong\n", slot.Nomor)
 		} else {
-			fmt.Printf("Slot %d Sudah Terisi\n", slot.Nomor)
+			fmt.Printf("Slot Motor %d Terisi\n", slot.Nomor)
+		}
+	}
+
+	fmt.Println("Status slot parkir mobil:")
+	for _, slot := range slotParkirMobil {
+		if slot.Kosong {
+			fmt.Printf("Slot Mobil %d Kosong\n", slot.Nomor)
+		} else {
+			fmt.Printf("Slot Mobil %d Terisi\n", slot.Nomor)
 		}
 	}
 }
